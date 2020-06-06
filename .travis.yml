@@ -1,0 +1,39 @@
+os: linux
+
+language: go
+
+go:
+  - 1.14.x
+
+services:
+  - docker
+
+script:
+  # Test the code
+  - go test -v ./...
+
+  # Build the code
+  - CGO_ENABLED=0 go build -o myhello
+
+  # Login to Docker
+  - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+
+  # Build Docker
+  - docker build -f Dockerfile -t anikaseibezeder/myhello:latest ./
+
+  # Get the SHA from the git commit of this build
+  - GIT_SHA="$(git rev-parse --short HEAD)"
+
+  # Tag the Docker image
+  - docker tag anikaseibezeder/myhello:latest anikaseibezeder/myhello:$GIT_SHA
+
+  # Push the Docker images
+  - docker push anikaseibezeder/myhello:latest
+  - docker push anikaseibezeder/myhello:$GIT_SHA
+
+
+
+
+
+
+
